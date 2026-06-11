@@ -1,0 +1,153 @@
+<main class="dashboard-shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Eminence Innovation Task Management</p>
+      <h1>{{ user()?.role }} workspace</h1>
+    </div>
+    <div class="profile">
+      <span>{{ user()?.username }}</span>
+      <button mat-stroked-button type="button" class="secondary" (click)="logout()">Logout</button>
+    </div>
+  </header>
+
+  <app-error-banner [message]="error()" />
+
+  <section class="summary">
+    <article>
+      <span>Total</span>
+      <strong>{{ allTasks().length }}</strong>
+    </article>
+    <article>
+      <span>Pending</span>
+      <strong>{{ pendingTaskCount() }}</strong>
+    </article>
+    <article>
+      <span>Completed</span>
+      <strong>{{ completedTaskCount() }}</strong>
+    </article>
+    @if (user()?.role === 'Manager') {
+      <article>
+        <span>Team Leads</span>
+        <strong>{{ visibleTeamLeads().length }}</strong>
+      </article>
+    }
+  </section>
+
+  <section class="workspace">
+    <form class="task-form" [formGroup]="form" (ngSubmit)="submitTask()">
+      <h2>{{ editingTask() ? 'Edit task' : 'Create task' }}</h2>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Title</mat-label>
+        <input matInput type="text" formControlName="title" />
+      </mat-form-field>
+      @if (form.controls.title.touched && form.controls.title.invalid) {
+        <div class="field-error">Task title must be between 3 and 120 characters.</div>
+      }
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Description</mat-label>
+        <textarea matInput rows="5" formControlName="description"></textarea>
+      </mat-form-field>
+      @if (form.controls.description.touched && form.controls.description.invalid) {
+        <div class="field-error">Description cannot exceed 1000 characters.</div>
+      }
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status" panelClass="app-select-panel">
+          <mat-option value="pending">Pending</mat-option>
+          <mat-option value="in_progress">In progress</mat-option>
+          <mat-option value="completed">Completed</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      @if (canAssign()) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Assign to</mat-label>
+          <mat-select formControlName="assignedTo" panelClass="app-select-panel">
+            <mat-option value="">Self</mat-option>
+            @for (candidate of assignableUsers(); track candidate._id) {
+              <mat-option [value]="candidate._id">{{ candidate.username }} - {{ candidate.role }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <div class="form-actions">
+        <button mat-flat-button type="submit" [disabled]="form.invalid">
+          {{ editingTask() ? 'Save changes' : 'Add task' }}
+        </button>
+        @if (editingTask()) {
+          <button mat-stroked-button type="button" class="secondary" (click)="resetForm()">Cancel</button>
+        }
+      </div>
+    </form>
+
+    <section class="task-list">
+      <div class="list-head">
+        <h2>Tasks</h2>
+        <div class="filters" aria-label="Task status filters">
+          <button mat-stroked-button type="button" [class.active]="selectedStatus() === 'all'" (click)="setStatusFilter('all')">
+            All
+          </button>
+          <button mat-stroked-button type="button" [class.active]="selectedStatus() === 'pending'" (click)="setStatusFilter('pending')">
+            Pending
+          </button>
+          <button mat-stroked-button type="button" [class.active]="selectedStatus() === 'in_progress'" (click)="setStatusFilter('in_progress')">
+            In progress
+          </button>
+          <button mat-stroked-button type="button" [class.active]="selectedStatus() === 'completed'" (click)="setStatusFilter('completed')">
+            Completed
+          </button>
+        </div>
+      </div>
+
+      @if (loading()) {
+        <p class="empty-state">Loading tasks...</p>
+      } @else if (!filteredTasks().length) {
+        <p class="empty-state">No tasks found.</p>
+      } @else {
+        <div class="tasks">
+          @for (task of filteredTasks(); track task._id) {
+            <article class="task-card">
+              <div>
+                <span class="status" [class.done]="task.status === 'completed'">{{ task.status.replace('_', ' ') }}</span>
+                <h3>{{ task.title }}</h3>
+                <p>{{ task.description || 'No description provided.' }}</p>
+              </div>
+
+              <dl>
+                <div>
+                  <dt>Assigned</dt>
+                  <dd>{{ task.assignedTo.username }}</dd>
+                </div>
+                <div>
+                  <dt>Created by</dt>
+                  <dd>{{ task.createdBy.username }}</dd>
+                </div>
+              </dl>
+
+              <div class="task-actions">
+                <mat-form-field class="status-control" appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Status</mat-label>
+                  <mat-select
+                    panelClass="app-select-panel"
+                    [value]="task.status"
+                    (selectionChange)="updateTaskStatus(task, $event.value)"
+                  >
+                    <mat-option value="pending">Pending</mat-option>
+                    <mat-option value="in_progress">In progress</mat-option>
+                    <mat-option value="completed">Completed</mat-option>
+                  </mat-select>
+                </mat-form-field>
+                <button mat-stroked-button type="button" class="secondary" (click)="editTask(task)">Edit</button>
+                <button mat-flat-button color="warn" type="button" (click)="deleteTask(task)">Delete</button>
+              </div>
+            </article>
+          }
+        </div>
+      }
+    </section>
+  </section>
+</main>

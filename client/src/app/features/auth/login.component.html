@@ -1,0 +1,31 @@
+<main class="auth-shell">
+  <section class="auth-panel">
+    <p class="eyebrow">Eminence Innovation</p>
+    <h1>Task Management</h1>
+    <app-error-banner [message]="error()" />
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="email" />
+      </mat-form-field>
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <div class="field-error">Enter a valid email address.</div>
+      }
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" autocomplete="current-password" />
+      </mat-form-field>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <div class="field-error">Password is required.</div>
+      }
+
+      <button mat-flat-button type="submit" [disabled]="form.invalid || loading()">
+        {{ loading() ? 'Signing in...' : 'Sign in' }}
+      </button>
+    </form>
+
+    <p class="switch">New here? <a routerLink="/register">Create an account</a></p>
+  </section>
+</main>

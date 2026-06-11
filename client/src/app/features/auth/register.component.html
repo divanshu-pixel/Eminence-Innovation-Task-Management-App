@@ -1,0 +1,60 @@
+<main class="auth-shell">
+  <section class="auth-panel">
+    <p class="eyebrow">Eminence Innovation</p>
+    <h1>Create account</h1>
+    <app-error-banner [message]="error()" />
+
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Username</mat-label>
+        <input matInput type="text" formControlName="username" autocomplete="name" />
+      </mat-form-field>
+      @if (form.controls.username.touched && form.controls.username.invalid) {
+        <div class="field-error">Username must be at least 3 characters.</div>
+      }
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" autocomplete="email" />
+      </mat-form-field>
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <div class="field-error">Enter a valid email address.</div>
+      }
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" autocomplete="new-password" />
+      </mat-form-field>
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <div class="field-error">Password must contain at least 8 characters.</div>
+      }
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Role</mat-label>
+        <mat-select formControlName="role" panelClass="app-select-panel">
+          <mat-option value="Employee">Employee</mat-option>
+          <mat-option value="Team Lead">Team Lead</mat-option>
+          <mat-option value="Manager">Manager</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      @if (form.controls.role.value === 'Employee') {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Team Lead</mat-label>
+          <mat-select formControlName="teamLead" panelClass="app-select-panel">
+            <mat-option [value]="null">Unassigned</mat-option>
+            @for (lead of teamLeads(); track lead._id) {
+              <mat-option [value]="lead._id">{{ lead.username }} - {{ lead.email }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
+      <button mat-flat-button type="submit" [disabled]="form.invalid || loading()">
+        {{ loading() ? 'Creating...' : 'Create account' }}
+      </button>
+    </form>
+
+    <p class="switch">Already have an account? <a routerLink="/login">Sign in</a></p>
+  </section>
+</main>
