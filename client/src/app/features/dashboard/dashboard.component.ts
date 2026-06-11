@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
+import { FormBuilder, FormGroupDirective, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -64,7 +64,13 @@ export class DashboardComponent implements OnInit, OnDestroy {
     assignedTo: ['']
   });
 
+  private formDirective?: FormGroupDirective;
   private realtimeSubscription?: Subscription;
+
+  @ViewChild(FormGroupDirective)
+  set taskFormDirective(formDirective: FormGroupDirective | undefined) {
+    this.formDirective = formDirective;
+  }
 
   ngOnInit(): void {
     this.loadTasks();
@@ -157,12 +163,19 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   resetForm(): void {
     this.editingTask.set(null);
-    this.form.reset({
+    const value = {
       title: '',
       description: '',
-      status: 'pending',
+      status: 'pending' as TaskStatus,
       assignedTo: ''
-    });
+    };
+
+    if (this.formDirective) {
+      this.formDirective.resetForm(value);
+      return;
+    }
+
+    this.form.reset(value);
   }
 
   private loadTasks(showLoader = true): void {
