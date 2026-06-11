@@ -1,4 +1,4 @@
 export const environment = {
-  apiBaseUrl: 'https://your-render-service.onrender.com/api',
-  socketUrl: 'https://your-render-service.onrender.com'
+  apiBaseUrl: 'https://eminence-innovation-task-management-app.onrender.com/api',
+  socketUrl: 'https://eminence-innovation-task-management-app.onrender.com'
 };
